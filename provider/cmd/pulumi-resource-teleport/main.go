@@ -12,15 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+//go:generate go run ./generate.go
+
 package main
 
 import (
-	"github.com/pulumi/pulumi-terraform-bridge/v3/pkg/tfgen"
-	xyz "github.com/pulumi/pulumi-xyz/provider"
-	"github.com/pulumi/pulumi-xyz/provider/pkg/version"
+	"context"
+	_ "embed"
+	"github.com/pulumi/pulumi-terraform-bridge/pf/tfbridge"
+	teleport "github.com/lbrlabs/pulumi-teleport/provider"
 )
 
+//go:embed schema-embed.json
+var pulumiSchema []byte
+
+//go:embed bridge-metadata.json
+var bridgeMetadata []byte
+
 func main() {
-	// Modify the path to point to the new provider
-	tfgen.Main("xyz", version.Version, xyz.Provider())
+	meta := tfbridge.ProviderMetadata{PackageSchema: pulumiSchema, BridgeMetadata: bridgeMetadata}
+	tfbridge.Main(context.Background(), "teleport", teleport.Provider(), meta)
 }
